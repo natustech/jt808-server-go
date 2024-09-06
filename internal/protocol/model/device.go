@@ -61,6 +61,7 @@ func (d *Device) ShouleTurnOffline() bool {
 }
 
 func (d *Device) ShouldClear() bool {
+	return false
 	now := time.Now().UnixMilli()
 	return d.Status == DeviceStatusOffline && now > d.Keepalive.Milliseconds()+d.LastestComTime.UnixMilli()
 }
