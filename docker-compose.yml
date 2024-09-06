@@ -6,7 +6,6 @@ networks:
 
 services: 
    londontasmaserver:
-    image: 'londontasmaserver:${BUILD_NUMBER}'
     hostname: 'londontasmaserver'
     ports:      
       - "3636:3636"
