@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/lucperkins/rek"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -142,7 +143,7 @@ func (mp *JT808MsgProcessor) Process(ctx context.Context, pkt *model.PacketData)
 	msgID := pkt.Header.MsgID
 	if _, ok := mp.options[msgID]; !ok {
 		errMsg := fmt.Sprintf("message id is not supported id=0x%04x", msgID)
-        	return nil, errors.New(errMsg)
+		return nil, errors.New(errMsg)
 	}
 
 	// process segment packet
@@ -154,7 +155,7 @@ func (mp *JT808MsgProcessor) Process(ctx context.Context, pkt *model.PacketData)
 	genDataFn := act.genData
 	if genDataFn == nil {
 		errMsg := fmt.Sprintf("message id is not supported id=0x%04x", msgID)
-        	return nil, errors.New(errMsg)
+		return nil, errors.New(errMsg)
 	}
 	data := genDataFn()
 
@@ -301,8 +302,46 @@ func processMsg0102(_ context.Context, data *model.ProcessData) error {
 	cache := storage.GetDeviceCache()
 	device, err := cache.GetDeviceByPhone(in.Header.PhoneNumber)
 	// 缓存不存在，说明设备不合法，需要返回错误，让服务层处理关闭
+
+	serviceToken := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1MmNmOWI2MS0zYzhmLTQxOTktOGJhMC0zNGY1YWE3YWMyZDEiLCJUWVBFIjoiU1lTVEVNIiwiVVNFUlRZUEUiOiJTRVJWSUNFIiwibmJmIjoxNzI1NjI5Mzg4LCJleHAiOjIwMjU2Mjk2ODgsImlzcyI6Im5hdHVzdGVjaCIsImF1ZCI6Im5hdHVzdGVjaCJ9.2i_cUHmIZO3V66fL95wRjk1vM3Grd5yzs6rWMWoq9eg"
+
 	if errors.Is(err, storage.ErrDeviceNotFound) {
-		return errors.Wrapf(err, "Fail to find device cache, phoneNumber=%s", in.Header.PhoneNumber)
+		type Body struct {
+			CollarNumber string `json:"collarNumber"`
+			AuthCode     string `json:"authCode"`
+			TerminalId   string `json:"terminalId"`
+			Plate        string `json:"plate"`
+			Latitude     string `json:"latitude"`
+			Longitude    string `json:"longitude"`
+			GpsDate      string `json:"gpsDate"`
+			Battery      uint32 `json:"battery"`
+			IpAddress    string `json:"ipAddress"`
+		}
+
+		res, _ := rek.Post("https://mobileapi-uat.petinoks.com/api/PetCollar/AddPetCollarHistory",
+			rek.Json(Body{
+				CollarNumber: in.Header.PhoneNumber,
+				AuthCode:     in.AuthCode,
+				TerminalId:   "",
+				Plate:        "",
+				Latitude:     "",
+				Longitude:    "",
+				GpsDate:      "",
+				Battery:      1,
+				IpAddress:    "",
+			}),
+			rek.Headers(map[string]string{
+				"Authorization": ("bearer " + serviceToken),
+			}),
+			rek.Timeout(10*time.Second),
+		)
+
+		fmt.Println(res.StatusCode())
+
+		body, _ := rek.BodyAsString(res.Body())
+		log.Debug().Str("Request Bbody : ", body)
+
+		// return errors.Wrapf(err, "Fail to find device cache, phoneNumber=%s", in.Header.PhoneNumber)
 	}
 
 	out := data.Outgoing.(*model.Msg8001)
