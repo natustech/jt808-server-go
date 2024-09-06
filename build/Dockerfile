@@ -27,4 +27,4 @@ EXPOSE 3636
 EXPOSE 3635
 EXPOSE 3634
 
-CMD ["/app/bin/jt808-server-go"]
+CMD ["/app/jt808-server-go"]
