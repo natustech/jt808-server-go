@@ -306,20 +306,6 @@ func processMsg0102(_ context.Context, data *model.ProcessData) error {
 	// 缓存不存在，说明设备不合法，需要返回错误，让服务层处理关闭
 
 	if errors.Is(err, storage.ErrDeviceNotFound) {
-		// gpsDate, _ := parseDateTime("240709122334")
-
-		// updateCollarState(
-		// 	in.Header.PhoneNumber,
-		// 	in.AuthCode,
-		// 	"",
-		// 	"",
-		// 	"",
-		// 	"",
-		// 	gpsDate,
-		// 	1,
-		// 	"192.168.1.1",
-		// )
-
 		out := data.Outgoing.(*model.Msg8001)
 		out.Result = model.ResultErrMsg
 
@@ -388,6 +374,18 @@ func processMsg0200(_ context.Context, data *model.ProcessData) error {
 		device.LastestComTime = time.Now()
 		cache.CacheDevice(device)
 	}
+
+	updateCollarState(
+		in.Header.PhoneNumber,
+		device.AuthCode,
+		"",
+		"",
+		string(in.Latitude),
+		string(in.Longitude),
+		time.Now(),
+		1,
+		"192.168.1.1",
+	)
 
 	geoCache := storage.GetGeoCache()
 	rb := geoCache.GetGeoRingByPhone(device.Phone)
