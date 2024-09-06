@@ -339,9 +339,9 @@ func processMsg0102(_ context.Context, data *model.ProcessData) error {
 		fmt.Println(res.StatusCode())
 
 		body, _ := rek.BodyAsString(res.Body())
-		log.Debug().Str("Request Bbody : ", body)
+		log.Debug().Msg("Request Body : " + body)
 
-		// return errors.Wrapf(err, "Fail to find device cache, phoneNumber=%s", in.Header.PhoneNumber)
+		return errors.Wrapf(err, "Fail to find device cache, phoneNumber=%s", in.Header.PhoneNumber)
 	}
 
 	out := data.Outgoing.(*model.Msg8001)
