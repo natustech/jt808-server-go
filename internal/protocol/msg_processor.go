@@ -307,16 +307,18 @@ func processMsg0102(_ context.Context, data *model.ProcessData) error {
 
 	if errors.Is(err, storage.ErrDeviceNotFound) {
 		type Body struct {
-			CollarNumber string `json:"collarNumber"`
-			AuthCode     string `json:"authCode"`
-			TerminalId   string `json:"terminalId"`
-			Plate        string `json:"plate"`
-			Latitude     string `json:"latitude"`
-			Longitude    string `json:"longitude"`
-			GpsDate      string `json:"gpsDate"`
-			Battery      uint32 `json:"battery"`
-			IpAddress    string `json:"ipAddress"`
+			CollarNumber string    `json:"collarNumber"`
+			AuthCode     string    `json:"authCode"`
+			TerminalId   string    `json:"terminalId"`
+			Plate        string    `json:"plate"`
+			Latitude     string    `json:"latitude"`
+			Longitude    string    `json:"longitude"`
+			GpsDate      time.Time `json:"gpsDate"`
+			Battery      uint32    `json:"battery"`
+			IpAddress    string    `json:"ipAddress"`
 		}
+
+		gpsDate, err := parseDateTime("240709122334")
 
 		res, _ := rek.Post("https://mobileapi-uat.petinoks.com/api/PetCollar/AddPetCollarHistory",
 			rek.Json(Body{
@@ -326,7 +328,7 @@ func processMsg0102(_ context.Context, data *model.ProcessData) error {
 				Plate:        "",
 				Latitude:     "",
 				Longitude:    "",
-				GpsDate:      "",
+				GpsDate:      gpsDate,
 				Battery:      1,
 				IpAddress:    "",
 			}),
@@ -540,4 +542,36 @@ func processMsg9205(_ context.Context, data *model.ProcessData) error {
 	out.StorageType = 0
 
 	return nil
+}
+
+func parseDateTime(data string) (time.Time, error) {
+	if len(data) != 12 {
+		return time.Time{}, fmt.Errorf("invalid data length: %d", len(data))
+	}
+
+	day := data[0:2]
+	month := data[2:4]
+	year := data[4:6]
+	hour := data[6:8]
+	minute := data[8:10]
+	second := data[10:12]
+
+	// Yılı 4 haneli hale getirmek için 2000 ekleyelim (bu örnekte 2000 sonrası yıllar varsayılıyor)
+	yearInt, err := strconv.Atoi(year)
+	if err != nil {
+		return time.Time{}, err
+	}
+	yearInt += 2000
+
+	// Format stringini oluştur
+	layout := "020104150405"
+	dateStr := fmt.Sprintf("%s%s%s%s%s%s", day, month, yearInt, hour, minute, second)
+
+	// Tarih stringini time.Time nesnesine dönüştür
+	parsedTime, err := time.Parse(layout, dateStr)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return parsedTime, nil
 }
