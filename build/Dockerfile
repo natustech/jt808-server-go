@@ -21,7 +21,7 @@ FROM alpine:latest
 
 WORKDIR /app
 
-COPY --from=build /app/output/ /app/
+COPY --from=build /app/target/ /app/
 
 EXPOSE 3636
 EXPOSE 3635
