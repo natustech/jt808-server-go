@@ -325,7 +325,7 @@ func processMsg0102(_ context.Context, data *model.ProcessData) error {
 		timer := NewKeepaliveTimer()
 		timer.Cancel(device.Phone)
 
-		return errors.Wrapf(err, "Fail to find device cache, phoneNumber=%s", in.Header.PhoneNumber)
+		return nil
 	}
 
 	out := data.Outgoing.(*model.Msg8001)
