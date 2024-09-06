@@ -8,7 +8,6 @@ services:
    londontasmaserver:
     hostname: 'londontasmaserver'
     ports:      
-      - "3636:3636"
-    environment:          
+      - "3636:3636"       
     networks:
       - app-tier
