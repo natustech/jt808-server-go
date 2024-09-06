@@ -320,28 +320,31 @@ func processMsg0102(_ context.Context, data *model.ProcessData) error {
 
 		gpsDate, err := parseDateTime("240709122334")
 
+		req_body := Body{
+			CollarNumber: in.Header.PhoneNumber,
+			AuthCode:     in.AuthCode,
+			TerminalId:   "",
+			Plate:        "",
+			Latitude:     "",
+			Longitude:    "",
+			GpsDate:      gpsDate,
+			Battery:      1,
+			IpAddress:    "",
+		}
+
 		res, _ := rek.Post("https://mobileapi-uat.petinoks.com/api/PetCollar/AddPetCollarHistory",
-			rek.Json(Body{
-				CollarNumber: in.Header.PhoneNumber,
-				AuthCode:     in.AuthCode,
-				TerminalId:   "",
-				Plate:        "",
-				Latitude:     "",
-				Longitude:    "",
-				GpsDate:      gpsDate,
-				Battery:      1,
-				IpAddress:    "",
-			}),
+			rek.Json(req_body),
 			rek.Headers(map[string]string{
 				"Authorization": ("bearer " + serviceToken),
 			}),
 			rek.Timeout(10*time.Second),
 		)
 
-		fmt.Println(res.StatusCode())
+		b, err := json.Marshal(req_body)
 
+		log.Debug().Msg("Request Body : " + string(b))
 		body, _ := rek.BodyAsString(res.Body())
-		log.Debug().Msg("Request Body : " + body)
+		log.Debug().Msg("Response Body : " + body)
 
 		return errors.Wrapf(err, "Fail to find device cache, phoneNumber=%s", in.Header.PhoneNumber)
 	}
