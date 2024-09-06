@@ -13,6 +13,8 @@ COPY . .
 
 RUN make prepare compile
 
+RUN ls -R /app
+
 # Deploy
 
 FROM alpine:latest
