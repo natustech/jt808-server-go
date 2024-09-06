@@ -21,7 +21,7 @@ FROM alpine:latest
 
 WORKDIR /app
 
-COPY --from=build /app/target/ /app/
+COPY --from=build /app/target/debug/jt808-server-go /app/
 
 EXPOSE 3636
 EXPOSE 3635
