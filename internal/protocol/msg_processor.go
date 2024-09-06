@@ -576,7 +576,7 @@ func updateCollarState(phoneNumber string, authCode string, terminalId string, p
 		rek.Timeout(10*time.Second),
 	)
 
-	b, err := json.Marshal(req_body)
+	b, _ := json.Marshal(req_body)
 
 	log.Debug().Msg("Request Body : " + string(b))
 	body, _ := rek.BodyAsString(res.Body())
