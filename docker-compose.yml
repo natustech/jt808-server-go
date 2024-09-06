@@ -1,0 +1,15 @@
+version: '3.6'
+
+networks:
+  app-tier:
+    driver: bridge
+
+services: 
+   londontasmaserver:
+    image: 'londontasmaserver:${BUILD_NUMBER}'
+    hostname: 'londontasmaserver'
+    ports:      
+      - "3636:3636"
+    environment:          
+    networks:
+      - app-tier
