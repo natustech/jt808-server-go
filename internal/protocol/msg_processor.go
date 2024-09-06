@@ -542,7 +542,7 @@ func parseDateTime(data string) (time.Time, error) {
 		return time.Time{}, fmt.Errorf("error parsing date components: %v %v %v %v %v %v", errDay, errMonth, errYear, errHour, errMinute, errSecond)
 	}
 
-	timeZone, err := time.LoadLocation("Europe/Istanbul")
+	timeZone, err := time.LoadLocation("Turkey Standard Time")
 
 	if err != nil {
 		log.Error().Msg("Cannot get location Europe/Istanbul")
