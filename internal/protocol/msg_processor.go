@@ -319,6 +319,12 @@ func processMsg0102(_ context.Context, data *model.ProcessData) error {
 			1,
 			"192.168.1.1",
 		)
+
+		out := data.Outgoing.(*model.Msg8001)
+		out.Result = model.ResultFail
+		timer := NewKeepaliveTimer()
+		timer.Cancel(device.Phone)
+
 		return errors.Wrapf(err, "Fail to find device cache, phoneNumber=%s", in.Header.PhoneNumber)
 	}
 
@@ -536,7 +542,11 @@ func parseDateTime(data string) (time.Time, error) {
 		return time.Time{}, fmt.Errorf("error parsing date components: %v %v %v %v %v %v", errDay, errMonth, errYear, errHour, errMinute, errSecond)
 	}
 
-	timeZone, _ := time.LoadLocation("Europe/Istanbul")
+	timeZone, err := time.LoadLocation("Europe/Istanbul")
+
+	if err != nil {
+		log.Error().Msg("Cannot get location Europe/Istanbul")
+	}
 
 	parsedTime := time.Date(year+2000, time.Month(month), day, hour, minute, second, 0, timeZone)
 
