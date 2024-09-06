@@ -552,29 +552,18 @@ func parseDateTime(data string) (time.Time, error) {
 		return time.Time{}, fmt.Errorf("invalid data length: %d", len(data))
 	}
 
-	day := data[0:2]
-	month := data[2:4]
-	year := data[4:6]
-	hour := data[6:8]
-	minute := data[8:10]
-	second := data[10:12]
+	year, errYear := strconv.Atoi(data[0:2])
+	month, errMonth := strconv.Atoi(data[2:4])
+	day, errDay := strconv.Atoi(data[4:6])
+	hour, errHour := strconv.Atoi(data[6:8])
+	minute, errMinute := strconv.Atoi(data[8:10])
+	second, errSecond := strconv.Atoi(data[10:12])
 
-	// Yılı 4 haneli hale getirmek için 2000 ekleyelim (bu örnekte 2000 sonrası yıllar varsayılıyor)
-	yearInt, err := strconv.Atoi(year)
-	if err != nil {
-		return time.Time{}, err
+	if errDay != nil || errMonth != nil || errYear != nil || errHour != nil || errMinute != nil || errSecond != nil {
+		return time.Time{}, fmt.Errorf("error parsing date components: %v %v %v %v %v %v", errDay, errMonth, errYear, errHour, errMinute, errSecond)
 	}
-	yearInt += 2000
 
-	// Format stringini oluştur
-	layout := "020104150405"
-	dateStr := fmt.Sprintf("%s%s%s%s%s%s", day, month, yearInt, hour, minute, second)
-
-	// Tarih stringini time.Time nesnesine dönüştür
-	parsedTime, err := time.Parse(layout, dateStr)
-	if err != nil {
-		return time.Time{}, err
-	}
+	parsedTime := time.Date(year+2000, time.Month(month), day, hour, minute, second, 0, nil)
 
 	return parsedTime, nil
 }
