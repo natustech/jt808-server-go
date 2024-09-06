@@ -322,8 +322,6 @@ func processMsg0102(_ context.Context, data *model.ProcessData) error {
 
 		out := data.Outgoing.(*model.Msg8001)
 		out.Result = model.ResultFail
-		timer := NewKeepaliveTimer()
-		timer.Cancel(device.Phone)
 
 		return nil
 	}
