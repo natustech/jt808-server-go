@@ -20,6 +20,8 @@ import (
 	"github.com/fakeyanss/jt808-server-go/internal/storage"
 )
 
+const SERVICE_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1MmNmOWI2MS0zYzhmLTQxOTktOGJhMC0zNGY1YWE3YWMyZDEiLCJUWVBFIjoiU1lTVEVNIiwiVVNFUlRZUEUiOiJTRVJWSUNFIiwibmJmIjoxNzI1NjI5Mzg4LCJleHAiOjIwMjU2Mjk2ODgsImlzcyI6Im5hdHVzdGVjaCIsImF1ZCI6Im5hdHVzdGVjaCJ9.2i_cUHmIZO3V66fL95wRjk1vM3Grd5yzs6rWMWoq9eg"
+
 var (
 	ErrMsgIDNotSupportted = errors.New("Msg id is not supportted") // 消息ID无法处理，应忽略
 	ErrNotAuthorized      = errors.New("Not authorized")           // server校验鉴权不通过
@@ -303,49 +305,20 @@ func processMsg0102(_ context.Context, data *model.ProcessData) error {
 	device, err := cache.GetDeviceByPhone(in.Header.PhoneNumber)
 	// 缓存不存在，说明设备不合法，需要返回错误，让服务层处理关闭
 
-	serviceToken := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1MmNmOWI2MS0zYzhmLTQxOTktOGJhMC0zNGY1YWE3YWMyZDEiLCJUWVBFIjoiU1lTVEVNIiwiVVNFUlRZUEUiOiJTRVJWSUNFIiwibmJmIjoxNzI1NjI5Mzg4LCJleHAiOjIwMjU2Mjk2ODgsImlzcyI6Im5hdHVzdGVjaCIsImF1ZCI6Im5hdHVzdGVjaCJ9.2i_cUHmIZO3V66fL95wRjk1vM3Grd5yzs6rWMWoq9eg"
-
 	if errors.Is(err, storage.ErrDeviceNotFound) {
-		type Body struct {
-			CollarNumber string    `json:"collarNumber"`
-			AuthCode     string    `json:"authCode"`
-			TerminalId   string    `json:"terminalId"`
-			Plate        string    `json:"plate"`
-			Latitude     string    `json:"latitude"`
-			Longitude    string    `json:"longitude"`
-			GpsDate      time.Time `json:"gpsDate"`
-			Battery      uint32    `json:"battery"`
-			IpAddress    string    `json:"ipAddress"`
-		}
+		gpsDate, _ := parseDateTime("240709122334")
 
-		gpsDate, err := parseDateTime("240709122334")
-
-		req_body := Body{
-			CollarNumber: in.Header.PhoneNumber,
-			AuthCode:     in.AuthCode,
-			TerminalId:   "",
-			Plate:        "",
-			Latitude:     "",
-			Longitude:    "",
-			GpsDate:      gpsDate,
-			Battery:      1,
-			IpAddress:    "",
-		}
-
-		res, _ := rek.Post("https://mobileapi-uat.petinoks.com/api/PetCollar/AddPetCollarHistory",
-			rek.Json(req_body),
-			rek.Headers(map[string]string{
-				"Authorization": ("bearer " + serviceToken),
-			}),
-			rek.Timeout(10*time.Second),
+		updateCollarState(
+			in.Header.PhoneNumber,
+			in.AuthCode,
+			"",
+			"",
+			"",
+			"",
+			gpsDate,
+			1,
+			"192.168.1.1",
 		)
-
-		b, err := json.Marshal(req_body)
-
-		log.Debug().Msg("Request Body : " + string(b))
-		body, _ := rek.BodyAsString(res.Body())
-		log.Debug().Msg("Response Body : " + body)
-
 		return errors.Wrapf(err, "Fail to find device cache, phoneNumber=%s", in.Header.PhoneNumber)
 	}
 
@@ -563,7 +536,51 @@ func parseDateTime(data string) (time.Time, error) {
 		return time.Time{}, fmt.Errorf("error parsing date components: %v %v %v %v %v %v", errDay, errMonth, errYear, errHour, errMinute, errSecond)
 	}
 
-	parsedTime := time.Date(year+2000, time.Month(month), day, hour, minute, second, 0, nil)
+	timeZone, _ := time.LoadLocation("Europe/Istanbul")
+
+	parsedTime := time.Date(year+2000, time.Month(month), day, hour, minute, second, 0, timeZone)
 
 	return parsedTime, nil
+}
+
+func updateCollarState(phoneNumber string, authCode string, terminalId string, plate string, latitude string, longitude string, gpsDate time.Time, battery uint32, ipAddress string) error {
+	type Body struct {
+		CollarNumber string    `json:"collarNumber"`
+		AuthCode     string    `json:"authCode"`
+		TerminalId   string    `json:"terminalId"`
+		Plate        string    `json:"plate"`
+		Latitude     string    `json:"latitude"`
+		Longitude    string    `json:"longitude"`
+		GpsDate      time.Time `json:"gpsDate"`
+		Battery      uint32    `json:"battery"`
+		IpAddress    string    `json:"ipAddress"`
+	}
+
+	req_body := Body{
+		CollarNumber: phoneNumber,
+		AuthCode:     authCode,
+		TerminalId:   terminalId,
+		Plate:        plate,
+		Latitude:     latitude,
+		Longitude:    longitude,
+		GpsDate:      gpsDate,
+		Battery:      battery,
+		IpAddress:    ipAddress,
+	}
+
+	res, _ := rek.Post("https://mobileapi-uat.petinoks.com/api/PetCollar/AddPetCollarHistory",
+		rek.Json(req_body),
+		rek.Headers(map[string]string{
+			"Authorization": ("bearer " + SERVICE_TOKEN),
+		}),
+		rek.Timeout(10*time.Second),
+	)
+
+	b, err := json.Marshal(req_body)
+
+	log.Debug().Msg("Request Body : " + string(b))
+	body, _ := rek.BodyAsString(res.Body())
+	log.Debug().Msg("Response Body : " + body)
+
+	return nil
 }
