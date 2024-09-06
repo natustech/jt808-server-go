@@ -6,6 +6,10 @@ networks:
 
 services: 
    londontasmaserver:
+    build:
+      context: .
+      dockerfile: 'build/Dockerfile'
+    container_name: 'londontasmaserver'
     hostname: 'londontasmaserver'
     ports:      
       - "3636:3636"       
