@@ -143,7 +143,6 @@ func (mp *JT808MsgProcessor) Process(ctx context.Context, pkt *model.PacketData)
 	if _, ok := mp.options[msgID]; !ok {
 		errMsg := fmt.Sprintf("message id is not supported id=0x%04x", msgID)
         	return nil, errors.New(errMsg)
-		return nil, errMsg
 	}
 
 	// process segment packet
@@ -156,7 +155,6 @@ func (mp *JT808MsgProcessor) Process(ctx context.Context, pkt *model.PacketData)
 	if genDataFn == nil {
 		errMsg := fmt.Sprintf("message id is not supported id=0x%04x", msgID)
         	return nil, errors.New(errMsg)
-		return nil, errMsg
 	}
 	data := genDataFn()
 
