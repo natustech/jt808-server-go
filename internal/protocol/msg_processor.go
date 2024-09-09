@@ -119,6 +119,17 @@ func initProcessOption() processOptions {
 		},
 		process: processMsg9205,
 	}
+	options[0x1007] = &action{
+		genData: func() *model.ProcessData {
+			return &model.ProcessData{Incoming: &model.Msg1007{}, Outgoing: &model.Msg8001{}}
+		},
+	}
+	options[0x0109] = &action{
+		genData: func() *model.ProcessData {
+			return &model.ProcessData{Incoming: &model.Msg0109{}, Outgoing: &model.Msg8109{}}
+		},
+		process: processMsg0109,
+	}
 
 	return options
 }
@@ -518,6 +529,21 @@ func processMsg9205(_ context.Context, data *model.ProcessData) error {
 	out.MediaType = 0
 	out.StreamType = 0
 	out.StorageType = 0
+
+	return nil
+}
+
+func processMsg0109(_ context.Context, data *model.ProcessData) error {
+	out := data.Outgoing.(*model.Msg8109)
+	now := time.Now()
+
+	out.Year = uint16(now.Year())
+	out.Month = uint8(now.Month())
+	out.Day = uint8(now.Day())
+	out.When = uint8(now.Hour())
+	out.Points = uint8(now.Minute())
+	out.Seconds = uint8(now.Second())
+	out.ResponseResult = 0
 
 	return nil
 }
