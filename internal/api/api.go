@@ -91,6 +91,28 @@ func Run(serv *server.TCPServer, cfg *config.Config) {
 		serv.Send(session.ID, &msg)
 	})
 
+	router.PUT("/device/:phone/forceLocation", func(c *gin.Context) {
+		phone := c.Param("phone")
+		params := model.DeviceParams{}
+		if err := c.ShouldBind(&params); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+		}
+		device, err := cache.GetDeviceByPhone(phone)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+			return
+		}
+		session, err := storage.GetSession(device.SessionID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+		}
+		header := model.GenMsgHeader(device, 0x8201, session.GetNextSerialNum())
+		msg := model.Msg8201{
+			Header: header,
+		}
+		serv.Send(session.ID, &msg)
+	})
+
 	httpAddr := ":" + cfg.Server.Port.HTTPPort
 
 	log.Debug().Msgf("Listening and serving HTTP on :%s", cfg.Server.Port.HTTPPort)

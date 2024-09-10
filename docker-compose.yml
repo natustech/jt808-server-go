@@ -12,6 +12,8 @@ services:
     container_name: 'londontasmaserver'
     hostname: 'londontasmaserver'
     ports:      
-      - "3636:3636"       
+      - "3636:3636"
+      - "3635:3635"  
+      - "3634:3634" 
     networks:
       - app-tier

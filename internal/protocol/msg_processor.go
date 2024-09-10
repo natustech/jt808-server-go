@@ -84,6 +84,12 @@ func initProcessOption() processOptions {
 		},
 		process: processMsg0200,
 	}
+	options[0x0201] = &action{
+		genData: func() *model.ProcessData {
+			return &model.ProcessData{Incoming: &model.Msg0201{}, Outgoing: &model.Msg8001{}}
+		},
+		process: processMsg0201,
+	}
 	options[0x1205] = &action{ // 终端上传音视频资源列表
 		genData: func() *model.ProcessData {
 			return &model.ProcessData{Incoming: &model.Msg1205{}} // 无需回复
@@ -403,6 +409,26 @@ func processMsg0200(_ context.Context, data *model.ProcessData) error {
 	rb.Write(dg)
 
 	return nil
+}
+
+func processMsg0201(ctx context.Context, data *model.ProcessData) error {
+	in := data.Incoming.(*model.Msg0201)
+
+	newPacket := model.Msg0200{
+		Header:     in.Header,
+		AlarmSign:  in.AlarmSign,
+		StatusSign: in.StatusSign,
+		Latitude:   in.Latitude,
+		Longitude:  in.Longitude,
+		Altitude:   in.Altitude,
+		Speed:      in.Speed,
+		Direction:  in.Direction,
+		Time:       in.Time,
+	}
+
+	data.Incoming = &newPacket
+
+	return processMsg0200(ctx, data)
 }
 
 func processMsg8001(_ context.Context, data *model.ProcessData) error {
