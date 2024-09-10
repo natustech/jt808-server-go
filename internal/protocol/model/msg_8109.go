@@ -48,6 +48,14 @@ func (m *Msg8109) GetHeader() *MsgHeader {
 	return m.Header
 }
 
-func (m *Msg8109) GenOutgoing(_ JT808Msg) error {
+func (m *Msg8109) GenOutgoing(incoming JT808Msg) error {
+	in, ok := incoming.(*Msg0109)
+	if !ok {
+		return ErrGenOutgoingMsg
+	}
+
+	m.Header = in.Header
+	m.Header.MsgID = 0x8109
+
 	return nil
 }
