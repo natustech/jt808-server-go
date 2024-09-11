@@ -15,6 +15,8 @@ func (m *Msg0201) Decode(packet *PacketData) error {
 	m.Header = packet.Header
 	pkt, idx := packet.Body, 0
 
+	m.LocationData = &LocationData{}
+
 	m.ResponseSerialNumber = hex.ReadWord(pkt, &idx)
 	m.LocationData.AlarmSign = hex.ReadDoubleWord(pkt, &idx)
 	m.LocationData.StatusSign = hex.ReadDoubleWord(pkt, &idx)
