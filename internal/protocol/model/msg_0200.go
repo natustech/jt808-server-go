@@ -13,6 +13,9 @@ type Msg0200 struct {
 func (m *Msg0200) Decode(packet *PacketData) error {
 	m.Header = packet.Header
 	pkt, idx := packet.Body, 0
+
+	m.LocationData = &LocationData{}
+
 	m.LocationData.AlarmSign = hex.ReadDoubleWord(pkt, &idx)
 	m.LocationData.StatusSign = hex.ReadDoubleWord(pkt, &idx)
 	m.LocationData.Latitude = hex.ReadDoubleWord(pkt, &idx)

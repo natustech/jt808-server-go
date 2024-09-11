@@ -1,8 +1,6 @@
 package model
 
 import (
-	"errors"
-
 	"github.com/fakeyanss/jt808-server-go/internal/codec/hex"
 )
 
@@ -20,19 +18,28 @@ func (m *Msg0704) Decode(packet *PacketData) error {
 
 	m.NumberOfDataItems = hex.ReadWord(pkt, &idx)
 	m.LocationDataType = hex.ReadByte(pkt, &idx)
+	m.LocationReports = make([]LocationData, m.NumberOfDataItems)
 
 	// Append Location Reports
 	for i := uint16(0); i < m.NumberOfDataItems; i++ {
 		reportLength := hex.ReadWord(pkt, &idx)
 
-		var l LocationData
+		fakeIdx := idx
 
-		if err := l.Decode(pkt, &idx, int(reportLength)); err != nil {
-			return err
-		}
+		l := &LocationData{}
 
-		m.LocationReports[i] = l
-		idx += int(reportLength) - 2
+		l.AlarmSign = hex.ReadDoubleWord(pkt, &fakeIdx)
+		l.StatusSign = hex.ReadDoubleWord(pkt, &fakeIdx)
+		l.Latitude = hex.ReadDoubleWord(pkt, &fakeIdx)
+		l.Longitude = hex.ReadDoubleWord(pkt, &fakeIdx)
+		l.Altitude = hex.ReadWord(pkt, &fakeIdx)
+		l.Speed = hex.ReadWord(pkt, &fakeIdx)
+		l.Direction = hex.ReadWord(pkt, &fakeIdx)
+		l.Time = hex.ReadBCD(pkt, &fakeIdx, 6)
+
+		m.LocationReports[i] = *l
+
+		idx += int(reportLength)
 	}
 
 	return nil
@@ -49,31 +56,5 @@ func (m *Msg0704) GetHeader() *MsgHeader {
 }
 
 func (m *Msg0704) GenOutgoing(_ JT808Msg) error {
-	return nil
-}
-
-func (l *LocationData) Decode(pkt []byte, idx *int, length int) error {
-	if len(pkt) < *idx+length {
-		return errors.New("packet too short for LocationData")
-	}
-
-	// Save starting index
-	startIdx := *idx
-
-	// Decode fields based on length
-	l.AlarmSign = hex.ReadDoubleWord(pkt, idx)
-	l.StatusSign = hex.ReadDoubleWord(pkt, idx)
-	l.Latitude = hex.ReadDoubleWord(pkt, idx)
-	l.Longitude = hex.ReadDoubleWord(pkt, idx)
-	l.Altitude = hex.ReadWord(pkt, idx)
-	l.Speed = hex.ReadWord(pkt, idx)
-	l.Direction = hex.ReadWord(pkt, idx)
-	l.Time = hex.ReadBCD(pkt, idx, 6)
-
-	// Check that we have read the exact amount of data we expected
-	if *idx-startIdx != length {
-		return errors.New("unexpected length for LocationData")
-	}
-
 	return nil
 }
