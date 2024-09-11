@@ -574,7 +574,7 @@ func processMsg0109(_ context.Context, data *model.ProcessData) error {
 }
 
 func processMsg0704(_ context.Context, data *model.ProcessData) error {
-	in := data.Incoming.(*model.Msg0200)
+	in := data.Incoming.(*model.Msg0704)
 
 	cache := storage.GetDeviceCache()
 	device, err := cache.GetDeviceByPhone(in.Header.PhoneNumber)
@@ -583,34 +583,36 @@ func processMsg0704(_ context.Context, data *model.ProcessData) error {
 		return errors.Wrapf(err, "Fail to find device cache, phoneNumber=%s", in.Header.PhoneNumber)
 	}
 
-	// 解析状态位编码
-	dg := &model.DeviceGeo{}
-	err = dg.Decode(device.Phone, in.LocationData)
-	if err != nil {
-		return errors.Wrapf(err, "Fail to decode device geo, phoneNumber=%s", device.Phone)
+	for i := uint16(0); i < in.NumberOfDataItems; i++ {
+		// 解析状态位编码
+		dg := &model.DeviceGeo{}
+		err = dg.Decode(device.Phone, &in.LocationReports[i])
+		if err != nil {
+			return errors.Wrapf(err, "Fail to decode device geo, phoneNumber=%s", device.Phone)
+		}
+
+		if dg.Geo.ACCStatus == 0 { // ACC关闭，设备休眠
+			device.Status = model.DeviceStatusSleeping
+			device.LastestComTime = time.Now()
+			cache.CacheDevice(device)
+		}
+
+		updateCollarState(
+			in.Header.PhoneNumber,
+			device.AuthCode,
+			"",
+			"",
+			strconv.FormatUint(uint64((&in.LocationReports[i]).Latitude), 10),
+			strconv.FormatUint(uint64((&in.LocationReports[i]).Longitude), 10),
+			time.Now(),
+			1,
+			"704",
+		)
+
+		geoCache := storage.GetGeoCache()
+		rb := geoCache.GetGeoRingByPhone(device.Phone)
+		rb.Write(dg)
 	}
-
-	if dg.Geo.ACCStatus == 0 { // ACC关闭，设备休眠
-		device.Status = model.DeviceStatusSleeping
-		device.LastestComTime = time.Now()
-		cache.CacheDevice(device)
-	}
-
-	updateCollarState(
-		in.Header.PhoneNumber,
-		device.AuthCode,
-		"",
-		"",
-		strconv.FormatUint(uint64(in.LocationData.Latitude), 10),
-		strconv.FormatUint(uint64(in.LocationData.Longitude), 10),
-		time.Now(),
-		1,
-		"201 / 200",
-	)
-
-	geoCache := storage.GetGeoCache()
-	rb := geoCache.GetGeoRingByPhone(device.Phone)
-	rb.Write(dg)
 
 	return nil
 }
