@@ -162,29 +162,31 @@ func GenMsg0200(conf *config.DeviceGeoConf, device *model.Device, deviceGeo *mod
 	speedOffset := rand.Float64()*20 - 10   // [-10, 10]
 	nextDirection := rand.Intn(360)
 	m := &model.Msg0200{
-		Header:     genMsgHeader(model.MsgID0200, device),
-		AlarmSign:  1024,                      // 暂不支持
-		StatusSign: genGeoMeta(conf).Encode(), // 每次生成新的status
-		Latitude:   uint32((deviceGeo.Location.Latitude + latitudeOffset) * model.LocationAccuracy),
-		Longitude:  uint32((deviceGeo.Location.Longitude + longitudeOffset) * model.LocationAccuracy),
-		Altitude:   deviceGeo.Location.Altitude + uint16(altitudeOffset),
-		Speed:      uint16((deviceGeo.Drive.Speed + speedOffset) * model.SpeedAccuracy),
-		Direction:  uint16(nextDirection),
+		Header: genMsgHeader(model.MsgID0200, device),
+		LocationData: &model.LocationData{
+			AlarmSign:  1024,                      // 暂不支持
+			StatusSign: genGeoMeta(conf).Encode(), // 每次生成新的status
+			Latitude:   uint32((deviceGeo.Location.Latitude + latitudeOffset) * model.LocationAccuracy),
+			Longitude:  uint32((deviceGeo.Location.Longitude + longitudeOffset) * model.LocationAccuracy),
+			Altitude:   deviceGeo.Location.Altitude + uint16(altitudeOffset),
+			Speed:      uint16((deviceGeo.Drive.Speed + speedOffset) * model.SpeedAccuracy),
+			Direction:  uint16(nextDirection),
+		},
 	}
-	m.Time = hex.FormatTime(time.Now())
+	m.LocationData.Time = hex.FormatTime(time.Now())
 
 	// uint降至0后，再-1变为uint最大值。这里直接重设一个速度。
-	if m.Latitude > 90*model.LocationAccuracy {
-		m.Latitude = 90 * model.LocationAccuracy
+	if m.LocationData.Latitude > 90*model.LocationAccuracy {
+		m.LocationData.Latitude = 90 * model.LocationAccuracy
 	}
-	if m.Longitude > 180*model.LocationAccuracy {
-		m.Longitude = 180 * model.LocationAccuracy
+	if m.LocationData.Longitude > 180*model.LocationAccuracy {
+		m.LocationData.Longitude = 180 * model.LocationAccuracy
 	}
-	if m.Altitude > 5000 {
-		m.Altitude = 1000
+	if m.LocationData.Altitude > 5000 {
+		m.LocationData.Altitude = 1000
 	}
-	if m.Speed > 300*model.SpeedAccuracy {
-		m.Speed = 100 * model.SpeedAccuracy
+	if m.LocationData.Speed > 300*model.SpeedAccuracy {
+		m.LocationData.Speed = 100 * model.SpeedAccuracy
 	}
 	return m
 }

@@ -19,9 +19,11 @@ func Test_location_Decode(t *testing.T) {
 			name: "case1: test latitude and longitude accuracy",
 			args: args{
 				m: &Msg0200{
-					Latitude:  116307629,
-					Longitude: 40058359,
-					Altitude:  312,
+					LocationData: &LocationData{
+						Latitude:  116307629,
+						Longitude: 40058359,
+						Altitude:  312,
+					},
 				},
 			},
 			want: Location{
@@ -34,7 +36,7 @@ func Test_location_Decode(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			l := &Location{}
-			l.Decode(tt.args.m)
+			l.Decode(tt.args.m.LocationData)
 			assert.Equal(t, tt.want, *l)
 		})
 	}

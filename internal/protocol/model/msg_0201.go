@@ -6,16 +6,9 @@ import (
 
 // Location information query answer
 type Msg0201 struct {
-	Header               *MsgHeader `json:"header"`
-	ResponseSerialNumber uint16     `json:"responseSerialNumber"`
-	AlarmSign            uint32     `json:"alarmSign"`
-	StatusSign           uint32     `json:"statusSign"`
-	Latitude             uint32     `json:"latitude"`
-	Longitude            uint32     `json:"longitude"`
-	Altitude             uint16     `json:"altitude"`
-	Speed                uint16     `json:"speed"`
-	Direction            uint16     `json:"direction"`
-	Time                 string     `json:"time"`
+	Header               *MsgHeader    `json:"header"`
+	ResponseSerialNumber uint16        `json:"responseSerialNumber"`
+	LocationData         *LocationData `json:"locationData"`
 }
 
 func (m *Msg0201) Decode(packet *PacketData) error {
@@ -23,14 +16,14 @@ func (m *Msg0201) Decode(packet *PacketData) error {
 	pkt, idx := packet.Body, 0
 
 	m.ResponseSerialNumber = hex.ReadWord(pkt, &idx)
-	m.AlarmSign = hex.ReadDoubleWord(pkt, &idx)
-	m.StatusSign = hex.ReadDoubleWord(pkt, &idx)
-	m.Latitude = hex.ReadDoubleWord(pkt, &idx)
-	m.Longitude = hex.ReadDoubleWord(pkt, &idx)
-	m.Altitude = hex.ReadWord(pkt, &idx)
-	m.Speed = hex.ReadWord(pkt, &idx)
-	m.Direction = hex.ReadWord(pkt, &idx)
-	m.Time = hex.ReadBCD(pkt, &idx, 6)
+	m.LocationData.AlarmSign = hex.ReadDoubleWord(pkt, &idx)
+	m.LocationData.StatusSign = hex.ReadDoubleWord(pkt, &idx)
+	m.LocationData.Latitude = hex.ReadDoubleWord(pkt, &idx)
+	m.LocationData.Longitude = hex.ReadDoubleWord(pkt, &idx)
+	m.LocationData.Altitude = hex.ReadWord(pkt, &idx)
+	m.LocationData.Speed = hex.ReadWord(pkt, &idx)
+	m.LocationData.Direction = hex.ReadWord(pkt, &idx)
+	m.LocationData.Time = hex.ReadBCD(pkt, &idx, 6)
 
 	return nil
 }

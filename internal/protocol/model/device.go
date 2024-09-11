@@ -74,7 +74,7 @@ type DeviceGeo struct {
 	Time     time.Time `json:"time"`
 }
 
-func (dg *DeviceGeo) Decode(phone string, m *Msg0200) error {
+func (dg *DeviceGeo) Decode(phone string, m *LocationData) error {
 	dg.Phone = phone
 	geoMetaInstance := &GeoMeta{}
 	geoMetaInstance.Decode(m.StatusSign)
@@ -100,7 +100,7 @@ type Location struct {
 	Altitude  uint16  `json:"altitude"`  // 高程，海拔高度，单位为米(m)
 }
 
-func (l *Location) Decode(m *Msg0200) {
+func (l *Location) Decode(m *LocationData) {
 	l.Latitude = float64(m.Latitude) / LocationAccuracy
 	l.Longitude = float64(m.Longitude) / LocationAccuracy
 	l.Altitude = m.Altitude
@@ -111,7 +111,7 @@ type Drive struct {
 	Direction uint16  `json:"direction"` // 方向，0-359，正北为 0，顺时针
 }
 
-func (d *Drive) Decode(m *Msg0200) {
+func (d *Drive) Decode(m *LocationData) {
 	d.Speed = float64(m.Speed) / SpeedAccuracy
 	d.Direction = m.Direction
 }

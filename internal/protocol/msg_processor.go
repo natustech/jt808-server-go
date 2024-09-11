@@ -90,6 +90,12 @@ func initProcessOption() processOptions {
 		},
 		process: processMsg0201,
 	}
+	options[0x0704] = &action{ // 位置信息上报
+		genData: func() *model.ProcessData {
+			return &model.ProcessData{Incoming: &model.Msg0704{}, Outgoing: &model.Msg8001{}}
+		},
+		process: processMsg0704,
+	}
 	options[0x1205] = &action{ // 终端上传音视频资源列表
 		genData: func() *model.ProcessData {
 			return &model.ProcessData{Incoming: &model.Msg1205{}} // 无需回复
@@ -381,7 +387,7 @@ func processMsg0200(_ context.Context, data *model.ProcessData) error {
 
 	// 解析状态位编码
 	dg := &model.DeviceGeo{}
-	err = dg.Decode(device.Phone, in)
+	err = dg.Decode(device.Phone, in.LocationData)
 	if err != nil {
 		return errors.Wrapf(err, "Fail to decode device geo, phoneNumber=%s", device.Phone)
 	}
@@ -397,11 +403,11 @@ func processMsg0200(_ context.Context, data *model.ProcessData) error {
 		device.AuthCode,
 		"",
 		"",
-		strconv.FormatUint(uint64(in.Latitude), 10),
-		strconv.FormatUint(uint64(in.Longitude), 10),
+		strconv.FormatUint(uint64(in.LocationData.Latitude), 10),
+		strconv.FormatUint(uint64(in.LocationData.Longitude), 10),
 		time.Now(),
 		1,
-		"192.168.1.1",
+		"201 / 200",
 	)
 
 	geoCache := storage.GetGeoCache()
@@ -415,15 +421,8 @@ func processMsg0201(ctx context.Context, data *model.ProcessData) error {
 	in := data.Incoming.(*model.Msg0201)
 
 	newPacket := model.Msg0200{
-		Header:     in.Header,
-		AlarmSign:  in.AlarmSign,
-		StatusSign: in.StatusSign,
-		Latitude:   in.Latitude,
-		Longitude:  in.Longitude,
-		Altitude:   in.Altitude,
-		Speed:      in.Speed,
-		Direction:  in.Direction,
-		Time:       in.Time,
+		Header:       in.Header,
+		LocationData: in.LocationData,
 	}
 
 	data.Incoming = &newPacket
@@ -570,6 +569,48 @@ func processMsg0109(_ context.Context, data *model.ProcessData) error {
 	out.Points = uint8(now.Minute())
 	out.Seconds = uint8(now.Second())
 	out.ResponseResult = 0
+
+	return nil
+}
+
+func processMsg0704(_ context.Context, data *model.ProcessData) error {
+	in := data.Incoming.(*model.Msg0200)
+
+	cache := storage.GetDeviceCache()
+	device, err := cache.GetDeviceByPhone(in.Header.PhoneNumber)
+	// 缓存不存在，说明设备不合法，需要返回错误，让服务层处理关闭
+	if errors.Is(err, storage.ErrDeviceNotFound) {
+		return errors.Wrapf(err, "Fail to find device cache, phoneNumber=%s", in.Header.PhoneNumber)
+	}
+
+	// 解析状态位编码
+	dg := &model.DeviceGeo{}
+	err = dg.Decode(device.Phone, in.LocationData)
+	if err != nil {
+		return errors.Wrapf(err, "Fail to decode device geo, phoneNumber=%s", device.Phone)
+	}
+
+	if dg.Geo.ACCStatus == 0 { // ACC关闭，设备休眠
+		device.Status = model.DeviceStatusSleeping
+		device.LastestComTime = time.Now()
+		cache.CacheDevice(device)
+	}
+
+	updateCollarState(
+		in.Header.PhoneNumber,
+		device.AuthCode,
+		"",
+		"",
+		strconv.FormatUint(uint64(in.LocationData.Latitude), 10),
+		strconv.FormatUint(uint64(in.LocationData.Longitude), 10),
+		time.Now(),
+		1,
+		"201 / 200",
+	)
+
+	geoCache := storage.GetGeoCache()
+	rb := geoCache.GetGeoRingByPhone(device.Phone)
+	rb.Write(dg)
 
 	return nil
 }
