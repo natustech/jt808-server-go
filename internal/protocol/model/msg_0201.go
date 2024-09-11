@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/fakeyanss/jt808-server-go/internal/codec/hex"
+	"github.com/rs/zerolog/log"
 )
 
 // Location information query answer
@@ -22,6 +23,9 @@ func (m *Msg0201) Decode(packet *PacketData) error {
 	m.LocationData.StatusSign = hex.ReadDoubleWord(pkt, &idx)
 	m.LocationData.Latitude = hex.ReadDoubleWord(pkt, &idx)
 	m.LocationData.Longitude = hex.ReadDoubleWord(pkt, &idx)
+	log.Debug().Uint32("Latitude", m.LocationData.Latitude).
+		Uint32("Longitude", m.LocationData.Longitude).
+		Msg("Decoded Location Data")
 	m.LocationData.Altitude = hex.ReadWord(pkt, &idx)
 	m.LocationData.Speed = hex.ReadWord(pkt, &idx)
 	m.LocationData.Direction = hex.ReadWord(pkt, &idx)
