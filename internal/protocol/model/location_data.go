@@ -28,7 +28,7 @@ func (m *LocationData) Decode(pkt []byte, idx *int) error {
 	m.Time = hex.ReadBCD(pkt, idx, 6)
 
 	// Additional Informations Decode:
-	for (*idx + 1) != len(pkt) {
+	for !(*idx+1 >= len(pkt)) {
 		addInfoId := hex.ReadByte(pkt, idx)
 		addInfoLength := hex.ReadByte(pkt, idx)
 		addInfoBody := hex.ReadBytes(pkt, idx, int(addInfoLength))
