@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/fakeyanss/jt808-server-go/internal/codec/hex"
+	"github.com/rs/zerolog/log"
 )
 
 type LocationData struct {
@@ -31,6 +32,9 @@ func (m *LocationData) Decode(pkt []byte, idx *int) error {
 		addInfoId := hex.ReadByte(pkt, idx)
 		addInfoLength := hex.ReadByte(pkt, idx)
 		addInfoBody := hex.ReadBytes(pkt, idx, int(addInfoLength))
+
+		log.Debug().Str("AddInfoId : ", string(addInfoId))
+		log.Debug().Str("addInfoLength : ", string(addInfoLength))
 
 		addInfoIdx := 1
 		switch addInfoId {
