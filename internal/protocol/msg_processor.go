@@ -406,7 +406,7 @@ func processMsg0200(_ context.Context, data *model.ProcessData) error {
 		strconv.FormatUint(uint64(in.LocationData.Latitude), 10),
 		strconv.FormatUint(uint64(in.LocationData.Longitude), 10),
 		time.Now(),
-		1,
+		uint32((in.LocationData).Electricity),
 		"201 / 200",
 	)
 
@@ -605,7 +605,7 @@ func processMsg0704(_ context.Context, data *model.ProcessData) error {
 			strconv.FormatUint(uint64((&in.LocationReports[i]).Latitude), 10),
 			strconv.FormatUint(uint64((&in.LocationReports[i]).Longitude), 10),
 			time.Now(),
-			1,
+			uint32((&in.LocationReports[i]).Electricity),
 			"704",
 		)
 
