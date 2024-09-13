@@ -1,10 +1,5 @@
 package model
 
-import (
-	"github.com/fakeyanss/jt808-server-go/internal/codec/hex"
-	"github.com/rs/zerolog/log"
-)
-
 // 位置信息汇报
 type Msg0200 struct {
 	Header       *MsgHeader    `json:"header"`
@@ -17,30 +12,11 @@ func (m *Msg0200) Decode(packet *PacketData) error {
 
 	m.LocationData = &LocationData{}
 
-	m.LocationData.AlarmSign = hex.ReadDoubleWord(pkt, &idx)
-	m.LocationData.StatusSign = hex.ReadDoubleWord(pkt, &idx)
-	m.LocationData.Latitude = hex.ReadDoubleWord(pkt, &idx)
-	m.LocationData.Longitude = hex.ReadDoubleWord(pkt, &idx)
-	log.Debug().Uint32("Latitude", m.LocationData.Latitude).
-		Uint32("Longitude", m.LocationData.Longitude).
-		Msg("Decoded Location Data")
-	m.LocationData.Altitude = hex.ReadWord(pkt, &idx)
-	m.LocationData.Speed = hex.ReadWord(pkt, &idx)
-	m.LocationData.Direction = hex.ReadWord(pkt, &idx)
-	m.LocationData.Time = hex.ReadBCD(pkt, &idx, 6)
+	m.LocationData.Decode(pkt, &idx)
 	return nil
 }
 
 func (m *Msg0200) Encode() (pkt []byte, err error) {
-	pkt = hex.WriteDoubleWord(pkt, m.LocationData.AlarmSign)
-	pkt = hex.WriteDoubleWord(pkt, m.LocationData.StatusSign)
-	pkt = hex.WriteDoubleWord(pkt, m.LocationData.Latitude)
-	pkt = hex.WriteDoubleWord(pkt, m.LocationData.Longitude)
-	pkt = hex.WriteWord(pkt, m.LocationData.Altitude)
-	pkt = hex.WriteWord(pkt, m.LocationData.Speed)
-	pkt = hex.WriteWord(pkt, m.LocationData.Direction)
-	pkt = hex.WriteBCD(pkt, m.LocationData.Time)
-
 	pkt, err = writeHeader(m, pkt)
 	return pkt, err
 }

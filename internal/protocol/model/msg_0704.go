@@ -2,7 +2,6 @@ package model
 
 import (
 	"github.com/fakeyanss/jt808-server-go/internal/codec/hex"
-	"github.com/rs/zerolog/log"
 )
 
 // Locate Data Bulk Upload
@@ -29,17 +28,7 @@ func (m *Msg0704) Decode(packet *PacketData) error {
 
 		l := &LocationData{}
 
-		l.AlarmSign = hex.ReadDoubleWord(pkt, &fakeIdx)
-		l.StatusSign = hex.ReadDoubleWord(pkt, &fakeIdx)
-		l.Latitude = hex.ReadDoubleWord(pkt, &fakeIdx)
-		l.Longitude = hex.ReadDoubleWord(pkt, &fakeIdx)
-		log.Debug().Uint32("Latitude", l.Latitude).
-			Uint32("Longitude", l.Longitude).
-			Msg("Decoded Location Data")
-		l.Altitude = hex.ReadWord(pkt, &fakeIdx)
-		l.Speed = hex.ReadWord(pkt, &fakeIdx)
-		l.Direction = hex.ReadWord(pkt, &fakeIdx)
-		l.Time = hex.ReadBCD(pkt, &fakeIdx, 6)
+		l.Decode(pkt, &fakeIdx)
 
 		m.LocationReports[i] = *l
 
