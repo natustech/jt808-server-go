@@ -1,5 +1,9 @@
 package model
 
+import (
+	"github.com/fakeyanss/jt808-server-go/internal/codec/hex"
+)
+
 // Location information query answer
 type Msg0201 struct {
 	Header               *MsgHeader    `json:"header"`
@@ -11,6 +15,7 @@ func (m *Msg0201) Decode(packet *PacketData) error {
 	m.Header = packet.Header
 	pkt, idx := packet.Body, 0
 
+	m.ResponseSerialNumber = hex.ReadWord(pkt, &idx)
 	m.LocationData = &LocationData{}
 
 	m.LocationData.Decode(pkt, &idx)

@@ -23,16 +23,14 @@ func (m *Msg0704) Decode(packet *PacketData) error {
 	// Append Location Reports
 	for i := uint16(0); i < m.NumberOfDataItems; i++ {
 		reportLength := hex.ReadWord(pkt, &idx)
-
-		fakeIdx := idx
+		reportBody := hex.ReadBytes(pkt, &idx, int(reportLength))
 
 		l := &LocationData{}
 
-		l.Decode(pkt, &fakeIdx)
+		fakeIdx := 0
+		l.Decode(reportBody, &fakeIdx)
 
 		m.LocationReports[i] = *l
-
-		idx += int(reportLength)
 	}
 
 	return nil
