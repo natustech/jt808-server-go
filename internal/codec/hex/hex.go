@@ -74,9 +74,10 @@ func bcd2NumberStr(bcd []byte) string {
 //	9 -> 1001
 func numberStr2BCD(number string) []byte {
 	var rNumber = number
-	for i := 0; i < 8-len(number); i++ {
-		rNumber = "f" + rNumber
-	}
+	// TODO FIX HERE
+	// for i := 0; i < 8-len(number); i++ {
+	// 	rNumber = "f" + rNumber
+	// }
 	bcd := Str2Byte(rNumber)
 	return bcd
 }

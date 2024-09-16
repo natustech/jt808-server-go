@@ -186,7 +186,14 @@ func TestReadWord(t *testing.T) {
 		args args
 		want uint16
 	}{
-		// TODO: Add test cases.
+		{
+			name: "case1",
+			args: args{
+				pkt: []byte{0x07, 0x1e},
+				idx: &[]int{0}[0],
+			},
+			want: 1822,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -207,7 +214,14 @@ func TestWriteWord(t *testing.T) {
 		args args
 		want []byte
 	}{
-		// TODO: Add test cases.
+		{
+			name: "case1",
+			args: args{
+				pkt: []byte{},
+				num: 154,
+			},
+			want: []byte{0x07, 0x1e},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -314,7 +328,15 @@ func TestReadBCD(t *testing.T) {
 		args args
 		want string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "case1",
+			args: args{
+				pkt: []byte{0x07, 0x00, 0x1e},
+				idx: &[]int{0}[0],
+				n:   3,
+			},
+			want: "07001E",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -335,7 +357,14 @@ func TestWriteBCD(t *testing.T) {
 		args args
 		want []byte
 	}{
-		// TODO: Add test cases.
+		{
+			name: "case1",
+			args: args{
+				pkt: []byte{},
+				bcd: "07001E",
+			},
+			want: []byte{0x07, 0x00, 0x1e},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -393,4 +393,6 @@ var argTable = map[uint32]*paramFn{
 	0x007B: {decode: decodeBytes, encode: encodeBytes},
 	// 终端休眠唤醒模式设置
 	0x007C: {decode: decodeBytes, encode: encodeBytes},
+	// change power saving mode
+	0xF121: {decode: decodeBytes, encode: encodeBytes},
 }
