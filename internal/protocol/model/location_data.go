@@ -51,8 +51,12 @@ func (m *LocationData) Decode(pkt []byte, idx *int) error {
 			m.Electricity = hex.ReadByte(addInfoBody, &addInfoIdx)
 		case 0xE1:
 			/** 2+2+(3+4+1)*N First 4 byte is static */
+			m.MCC = hex.ReadWord(pkt, idx)
+			m.MNC = hex.ReadWord(pkt, idx)
+
 			totalDataCount := (addInfoLength - 4) / 8
 			m.BaseStations = make([]BaseStation, totalDataCount)
+
 			for i := 0; i < int(totalDataCount); i++ {
 				baseStation := &BaseStation{}
 				baseStation.Lac = hex.ReadBCD(pkt, idx, 3)
