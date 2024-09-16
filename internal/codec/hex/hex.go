@@ -74,10 +74,15 @@ func bcd2NumberStr(bcd []byte) string {
 //	9 -> 1001
 func numberStr2BCD(number string) []byte {
 	var rNumber = number
-	// TODO FIX HERE
-	// for i := 0; i < 8-len(number); i++ {
-	// 	rNumber = "f" + rNumber
-	// }
+	for i := 0; i < 8-len(number); i++ {
+		rNumber = "f" + rNumber
+	}
+	bcd := Str2Byte(rNumber)
+	return bcd
+}
+
+func numberStr2BCDWithoutAutoComplete(number string) []byte {
+	var rNumber = number
 	bcd := Str2Byte(rNumber)
 	return bcd
 }
@@ -155,6 +160,11 @@ func ReadBCD(pkt []byte, idx *int, n int) string {
 // 对应JT808类型BCD[n]
 func WriteBCD(pkt []byte, bcd string) []byte {
 	return append(pkt, numberStr2BCD(bcd)...)
+}
+
+// 对应JT808类型BCD[n]
+func WriteBCDWithoutAutoComplete(pkt []byte, bcd string) []byte {
+	return append(pkt, numberStr2BCDWithoutAutoComplete(bcd)...)
 }
 
 // 对应JT808类型String

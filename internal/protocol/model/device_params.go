@@ -153,18 +153,19 @@ func writeDoubleWordAny(pkt []byte, num any) []byte {
 }
 
 var (
-	decodeByte       = func(b []byte, idx *int, paramLen int) any { return hex.ReadByte(b, idx) }
-	encodeByte       = func(a any) (pkt []byte) { return writeByteAny(pkt, a) }
-	decodeWord       = func(b []byte, idx *int, paramLen int) any { return hex.ReadWord(b, idx) }
-	encodeWord       = func(a any) (pkt []byte) { return writeWordAny(pkt, a) }
-	decodeDoubleWord = func(b []byte, idx *int, paramLen int) any { return hex.ReadDoubleWord(b, idx) }
-	encodeDoubleWord = func(a any) (pkt []byte) { return writeDoubleWordAny(pkt, a) }
-	decodeBytes      = func(b []byte, idx *int, paramLen int) any { return hex.ReadBCD(b, idx, paramLen) } // transform bytes to string
-	encodeBytes      = func(a any) (pkt []byte) { return hex.WriteBCD(pkt, a.(string)) }                   // transform string to bytes
-	decodeString     = func(b []byte, idx *int, paramLen int) any { return hex.ReadString(b, idx, paramLen) }
-	encodeString     = func(a any) (pkt []byte) { return hex.WriteString(pkt, a.(string)) }
-	decodeGBK        = func(b []byte, idx *int, paramLen int) any { return hex.ReadGBK(b, idx, paramLen) }
-	encodeGBK        = func(a any) (pkt []byte) { return hex.WriteGBK(pkt, a.(string)) }
+	decodeByte                     = func(b []byte, idx *int, paramLen int) any { return hex.ReadByte(b, idx) }
+	encodeByte                     = func(a any) (pkt []byte) { return writeByteAny(pkt, a) }
+	decodeWord                     = func(b []byte, idx *int, paramLen int) any { return hex.ReadWord(b, idx) }
+	encodeWord                     = func(a any) (pkt []byte) { return writeWordAny(pkt, a) }
+	decodeDoubleWord               = func(b []byte, idx *int, paramLen int) any { return hex.ReadDoubleWord(b, idx) }
+	encodeDoubleWord               = func(a any) (pkt []byte) { return writeDoubleWordAny(pkt, a) }
+	decodeBytes                    = func(b []byte, idx *int, paramLen int) any { return hex.ReadBCD(b, idx, paramLen) }  // transform bytes to string
+	encodeBytes                    = func(a any) (pkt []byte) { return hex.WriteBCD(pkt, a.(string)) }                    // transform string to bytes
+	encodeBytesWithoutAutoComplete = func(a any) (pkt []byte) { return hex.WriteBCDWithoutAutoComplete(pkt, a.(string)) } // transform string to bytes
+	decodeString                   = func(b []byte, idx *int, paramLen int) any { return hex.ReadString(b, idx, paramLen) }
+	encodeString                   = func(a any) (pkt []byte) { return hex.WriteString(pkt, a.(string)) }
+	decodeGBK                      = func(b []byte, idx *int, paramLen int) any { return hex.ReadGBK(b, idx, paramLen) }
+	encodeGBK                      = func(a any) (pkt []byte) { return hex.WriteGBK(pkt, a.(string)) }
 )
 
 var argTable = map[uint32]*paramFn{
@@ -394,5 +395,5 @@ var argTable = map[uint32]*paramFn{
 	// 终端休眠唤醒模式设置
 	0x007C: {decode: decodeBytes, encode: encodeBytes},
 	// change power saving mode
-	0xF121: {decode: decodeBytes, encode: encodeBytes},
+	0xF121: {decode: decodeBytes, encode: encodeBytesWithoutAutoComplete},
 }
