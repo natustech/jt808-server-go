@@ -45,23 +45,24 @@ func (m *LocationData) Decode(pkt []byte, idx *int) error {
 		log.Debug().Str("AddInfoId : ", string(addInfoId))
 		log.Debug().Str("AddInfoLength : ", string(addInfoLength))
 
-		addInfoIdx := 1
+		addInfoIdx := 0
 		switch addInfoId {
 		case 0xE4:
+			addInfoId++
 			m.Electricity = hex.ReadByte(addInfoBody, &addInfoIdx)
 		case 0xE1:
 			/** 2+2+(3+4+1)*N First 4 byte is static */
-			m.MCC = hex.ReadWord(pkt, idx)
-			m.MNC = hex.ReadWord(pkt, idx)
+			m.MCC = hex.ReadWord(pkt, &addInfoIdx)
+			m.MNC = hex.ReadWord(pkt, &addInfoIdx)
 
 			totalDataCount := (addInfoLength - 4) / 8
 			m.BaseStations = make([]BaseStation, totalDataCount)
 
 			for i := 0; i < int(totalDataCount); i++ {
 				baseStation := &BaseStation{}
-				baseStation.Lac = hex.ReadBCD(pkt, idx, 3)
-				baseStation.CellId = hex.ReadDoubleWord(pkt, idx)
-				baseStation.SignalStrength = hex.ReadByte(pkt, idx)
+				baseStation.Lac = hex.ReadBCD(addInfoBody, &addInfoIdx, 3)
+				baseStation.CellId = hex.ReadDoubleWord(addInfoBody, &addInfoIdx)
+				baseStation.SignalStrength = hex.ReadByte(addInfoBody, &addInfoIdx)
 
 				m.BaseStations[i] = *baseStation
 
