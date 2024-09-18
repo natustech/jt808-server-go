@@ -40,6 +40,7 @@ func TestMsg704_Decode(t *testing.T) {
 			msg.Decode(packet)
 			b, err := json.MarshalIndent(msg, "", "  ")
 			t.Error(string(b))
+			t.Error(msg.LocationReports[0].Electricity)
 
 			require.Equal(t, tt.wantErr, err != nil, err)
 			if tt.want == nil {

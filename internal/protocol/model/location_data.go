@@ -48,7 +48,7 @@ func (m *LocationData) Decode(pkt []byte, idx *int) error {
 		addInfoIdx := 0
 		switch addInfoId {
 		case 0xE4:
-			addInfoId++
+			addInfoIdx++
 			m.Electricity = hex.ReadByte(addInfoBody, &addInfoIdx)
 		case 0xE1:
 			/** 2+2+(3+4+1)*N First 4 byte is static */
